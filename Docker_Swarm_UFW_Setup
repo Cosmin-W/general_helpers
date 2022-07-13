@@ -1,0 +1,31 @@
+# Quick hellper enable ports in Docker Swarm with UFW
+## Execute the following commands on each node
+
+## Setting Up Default Policies
+
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+
+## Allowing SSH Connections
+sudo ufw allow ssh
+(sudo ufw allow 22)
+
+## Enabling UFW
+sudo ufw enable
+
+## Opening Docker Swarm Ports
+ufw allow 2376/tcp comment "docker client secure communication"
+ufw allow 2377/tcp comment "swarm management communications"
+ufw allow 7946/tcp comment "swarm node communications"
+ufw allow 7946/udp comment "swarm node communications"
+ufw allow 4789/udp comment "swarm overlay trafic"
+
+## If UFW is enable
+ufw reload
+
+## If UFW is not enable
+ufw enable
+
+## Restart Docker daemon
+systemctl restart docker
+
