@@ -1,0 +1,65 @@
+#enable IP Forwarding
+nano /etc/sysctl.conf
+
+#uncoment 
+net.ipv4.ip_forward=1
+
+#reboot service
+sysctl -p
+
+#install wireguard
+apt install wireguard
+
+#setup keys
+cd /etc/wireguard
+umask 077; wg genkey | tee privatekey | wg pubkey > publickey
+
+#get privatekey
+cat privatekey
+
+#crate wireguard config
+nano /etc/wireguard/wg0.conf
+
+#wireguard config 
+[Interface]
+PrivateKey = <Your Private Key Goes Here>
+Address = 10.0.0.1/24
+ListenPort = 51820
+PostUp = iptables -A FORWARD -i wg0 -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+PostDown = iptables -D FORWARD -i wg0 -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE
+
+#add peer (clients connections
+[Peer]
+# Test Client
+PublicKey=<The Public Key of the Debian Client>
+AllowedIPs=10.0.0.2
+PersistentKeepalive=25
+
+#test wireguard config
+wg-quick up wg0
+wg-quick down wg0
+
+#run wireguard on boot
+systemctl enable wg-quick@wg0
+
+
+#Client config
+[Interface]
+PrivateKey = <This Debian Client Private Key Goes Here>
+Address=10.0.0.2/24
+
+[Peer]
+# Ubuntu WG Server
+PublicKey=<Public Key From Ubuntu WG Server>
+Endpoint=<Public Key From Ubuntu WG Server>:51820
+AllowedIPs = 0.0.0.0/0 # Forward all traffic to server
+ 
+ 
+#uwf config
+ufw allow 22/tcp
+ufw allow 51820/udp
+ufw enable
+
+
+
+
