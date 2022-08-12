@@ -42,6 +42,13 @@ wg-quick down wg0
 #run wireguard on boot
 systemctl enable wg-quick@wg0
 
+#start server
+systemctl start wg-quick@wg0
+#stop server
+systemctl stop wg-quick@wg0
+#status server
+systemctl status wg-quick@wg0
+
 
 #Client config
 [Interface]
